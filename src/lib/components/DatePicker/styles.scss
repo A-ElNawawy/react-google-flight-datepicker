@@ -179,6 +179,10 @@
     transform-origin: top left;
     opacity: 0;
     transform: scale(0);
+    
+    &.single {
+      width: 385px;
+    }
 
     &.open {
       animation: showPopup 0.2s forwards;
@@ -252,6 +256,11 @@
     margin: 12px 38px 8px;
     overflow: hidden;
     min-height: 353px;
+    
+    &.single {
+      margin-left: 36px;
+      margin-right: 36px;
+    }
   }
 
   .calendar-content {
@@ -269,7 +278,7 @@
   .month-calendar {
     width: 308px;
     color: #3c4043;
-    margin-right: 70px;
+    margin-right: 43px;
 
     &.hidden {
       position: absolute;
@@ -280,7 +289,11 @@
 
     &.isAnimating {
       position: absolute;
-      left: -378px;
+      left: -350px;
+    }
+    
+    &.single {
+      margin-right: 39px;
     }
   }
 
@@ -521,7 +534,7 @@
   }
 
   /** RESPONSIVE MOBILE */
-  @media screen and (max-width: 500px) {
+  @media screen and (max-width: 768px) {
     .date-picker-demo {
       width: 100%;
     }

@@ -9,7 +9,7 @@ import DialogContentDesktop from './DialogContentDesktop';
 
 const Dialog = ({
   toggleDialog,
-  isOpen,
+  complsOpen,
   fromDate,
   toDate,
   hoverDate,
@@ -25,14 +25,19 @@ const Dialog = ({
   minDate,
   maxDate,
   dateFormat,
+  weekDayFormat,
   monthFormat,
   isSingle,
   isMobile,
   highlightToday,
+  hideDialogHeader,
+  hideDialogFooter,
+  dateInputSeperator,
+  singleCalendar,
 }) => {
-  const containerRef = useRef();
   const [hideAnimation, setHideAnimation] = useState(false);
   const [dateChanged, setDateChanged] = useState();
+  const containerRef = useRef();
 
   function onChangeDate(date, value) {
     setDateChanged(date);
@@ -40,57 +45,66 @@ const Dialog = ({
   }
 
   useEffect(() => {
-    if (isOpen && !hideAnimation) {
+    if (complsOpen && !hideAnimation) {
       setHideAnimation(true);
     }
-    if (isOpen) {
+    if (complsOpen) {
       setTimeout(() => {
-        const startDateInput = containerRef.current.querySelector('#start-date-input-button');
-        if (startDateInput) {
-          startDateInput.focus();
+        if (containerRef.current && containerRef.current.getElementById) {
+          const startDateInput = containerRef.current.getElementById('start-date-input-button');
+          if (startDateInput) {
+            startDateInput.focus();
+          }
         }
+
       }, 50);
     }
-  }, [isOpen]);
+  }, [complsOpen]);
 
   return (
     <div
-      ref={containerRef}
       className={cx('dialog-date-picker', {
-        open: isOpen,
-        hide: !isOpen && hideAnimation,
+        open: complsOpen,
+        hide: !complsOpen && hideAnimation,
+        single: singleCalendar && !isMobile
       })}
+      ref={containerRef}
     >
-      <div className="dialog-header">
-        <button
-          type="button"
-          className="btn-outline back-button"
-          onClick={toggleDialog}
-        >
-          <BackIcon viewBox="0 0 492 492" />
-        </button>
-        <DateInputGroup
-          inputFocus={inputFocus}
-          handleClickDateInput={handleClickDateInput}
-          fromDate={fromDate}
-          toDate={toDate}
-          minDate={minDate}
-          maxDate={maxDate}
-          handleChangeDate={onChangeDate}
-          startDatePlaceholder={startDatePlaceholder}
-          endDatePlaceholder={endDatePlaceholder}
-          dateFormat={dateFormat}
-          isSingle={isSingle}
-          nonFocusable={!isOpen}
-        />
-        <button
-          type="button"
-          className="btn-outline reset-button"
-          onClick={handleReset}
-        >
-          Reset
-        </button>
-      </div>
+      {!hideDialogHeader
+        && (
+        <div className="dialog-header">
+          <button
+            type="button"
+            className="btn-outline back-button"
+            onClick={toggleDialog}
+          >
+            <BackIcon viewBox="0 0 492 492" />
+          </button>
+          <DateInputGroup
+            inputFocus={inputFocus}
+            handleClickDateInput={handleClickDateInput}
+            fromDate={fromDate}
+            toDate={toDate}
+            minDate={minDate}
+            maxDate={maxDate}
+            handleChangeDate={onChangeDate}
+            startDatePlaceholder={startDatePlaceholder}
+            endDatePlaceholder={endDatePlaceholder}
+            dateFormat={dateFormat}
+            isSingle={isSingle}
+            nonFocusable={!complsOpen}
+            dateInputSeperator={dateInputSeperator}
+          />
+          <button
+            type="button"
+            className="btn-outline reset-button"
+            onClick={handleReset}
+          >
+            Reset
+          </button>
+        </div>
+        )}
+
       <div className="dialog-content">
         {isMobile
           ? (
@@ -103,8 +117,9 @@ const Dialog = ({
               minDate={minDate}
               maxDate={maxDate}
               dateFormat={dateFormat}
+              weekDayFormat={weekDayFormat}
               monthFormat={monthFormat}
-              isOpen={isOpen}
+              complsOpen={complsOpen}
               isSingle={isSingle}
               highlightToday={highlightToday}
             />
@@ -120,32 +135,37 @@ const Dialog = ({
               minDate={minDate}
               maxDate={maxDate}
               dateFormat={dateFormat}
+              weekDayFormat={weekDayFormat}
               monthFormat={monthFormat}
               isSingle={isSingle}
-              isOpen={isOpen}
+              complsOpen={complsOpen}
               dateChanged={dateChanged}
               highlightToday={highlightToday}
+              singleCalendar={singleCalendar}
             />
           )}
       </div>
-      <div className="dialog-footer">
-        <button type="button" className="submit-button" onClick={toggleDialog} tabIndex="0">
-          Done
-        </button>
-        <button
-          type="button"
-          className="btn-outline reset-button mobile"
-          onClick={handleReset}
-        >
-          Reset
-        </button>
-      </div>
+      {!hideDialogFooter
+        && (
+        <div className="dialog-footer">
+          <button type="button" className="submit-button" onClick={toggleDialog} tabIndex="0">
+            Done
+          </button>
+          <button
+            type="button"
+            className="btn-outline reset-button mobile"
+            onClick={handleReset}
+          >
+            Reset
+          </button>
+        </div>
+        )}
     </div>
   );
 };
 
 Dialog.propTypes = {
-  isOpen: PropTypes.bool,
+  complsOpen: PropTypes.bool,
   inputFocus: PropTypes.string,
   fromDate: PropTypes.instanceOf(Date),
   toDate: PropTypes.instanceOf(Date),
@@ -166,10 +186,15 @@ Dialog.propTypes = {
   isSingle: PropTypes.bool,
   isMobile: PropTypes.bool,
   highlightToday: PropTypes.bool,
+  weekDayFormat: PropTypes.string,
+  hideDialogHeader: PropTypes.bool,
+  hideDialogFooter: PropTypes.bool,
+  dateInputSeperator: PropTypes.node,
+  singleCalendar: PropTypes.bool,
 };
 
 Dialog.defaultProps = {
-  isOpen: false,
+  complsOpen: false,
   inputFocus: null,
   fromDate: null,
   toDate: null,
@@ -190,6 +215,10 @@ Dialog.defaultProps = {
   isSingle: false,
   isMobile: false,
   highlightToday: false,
+  weekDayFormat: '',
+  hideDialogHeader: false,
+  hideDialogFooter: false,
+  dateInputSeperator: null,
 };
 
 export default Dialog;

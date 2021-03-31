@@ -17,10 +17,12 @@ const DialogContentDesktop = ({
   minDate,
   maxDate,
   monthFormat,
+  weekDayFormat,
   isSingle,
-  isOpen,
+  complsOpen,
   dateChanged,
   highlightToday,
+  singleCalendar,
 }) => {
   const containerRef = useRef();
   const [translateAmount, setTranslateAmount] = useState(0);
@@ -28,18 +30,31 @@ const DialogContentDesktop = ({
   const [focusDate, setFocusDate] = useState(dayjs());
   const [disablePrev, setDisablePrev] = useState(false);
   const [disableNext, setDisableNext] = useState(false);
+  const [wrapperWidth, setWrapperWidth] = useState(0);
 
-  function getArrayMonth(date) {
+  function getArrayMonth(date, singleCalendar) {
     const prevMonth = dayjs(date).subtract(1, 'month');
     const nextMonth = dayjs(date).add(1, 'month');
     const futureMonth = dayjs(date).add(2, 'month');
 
-    return [prevMonth, focusDate, nextMonth, futureMonth];
+    if (singleCalendar) {
+        return [prevMonth, focusDate, nextMonth];
+    } else {
+        return [prevMonth, focusDate, nextMonth, futureMonth];
+    }
   }
 
   useEffect(() => {
+    if (containerRef.current) {
+      const style = window.getComputedStyle(containerRef.current)
+      const _translateAmount = singleCalendar ? containerRef.current.offsetWidth + parseInt(style.marginLeft) - 8 : containerRef.current.offsetWidth / 2;
+      setWrapperWidth(_translateAmount);
+    }
+  }, [containerRef.current]);
+
+  useEffect(() => {
     setFocusDate(fromDate || dayjs());
-  }, [isOpen]);
+  }, [complsOpen]);
 
   useEffect(() => {
     if (minDate && focusDate.isBefore(dayjs(minDate).add(1, 'month'), 'month')) {
@@ -54,7 +69,7 @@ const DialogContentDesktop = ({
       setDisableNext(false);
     }
 
-    const arrayMonth = getArrayMonth(focusDate);
+    const arrayMonth = getArrayMonth(focusDate, singleCalendar);
     setMonthArray(arrayMonth);
   }, [focusDate]);
 
@@ -79,7 +94,7 @@ const DialogContentDesktop = ({
   function increaseCurrentMonth(date) {
     if (disableNext) return;
 
-    setTranslateAmount(-378);
+    setTranslateAmount(-wrapperWidth);
     setTimeout(() => {
       increaseFocusDate(date);
       setTranslateAmount(0);
@@ -89,7 +104,7 @@ const DialogContentDesktop = ({
   function decreaseCurrentMonth(date) {
     if (disablePrev) return;
 
-    setTranslateAmount(378);
+    setTranslateAmount(wrapperWidth);
     setTimeout(() => {
       decreaseFocusDate(date);
       setTranslateAmount(0);
@@ -244,19 +259,24 @@ const DialogContentDesktop = ({
         startWeekDay={startWeekDay}
         minDate={minDate}
         maxDate={maxDate}
+        weekDayFormat={weekDayFormat}
         monthFormat={monthFormat}
         isSingle={isSingle}
         highlightToday={highlightToday}
+        singleCalendar={singleCalendar}
       />
     ));
   }
 
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-    <div className="calendar-wrapper" ref={containerRef} onKeyDown={onKeyDown}>
+    <div className={cx('calendar-wrapper', {
+        single: singleCalendar,
+    })} ref={containerRef} onKeyDown={onKeyDown}>
       <div
         className={cx('calendar-content', {
           isAnimating: translateAmount !== 0,
+          single: singleCalendar,
         })}
         style={{
           transform: `translateX(${translateAmount}px)`,
@@ -300,9 +320,10 @@ DialogContentDesktop.propTypes = {
   maxDate: PropTypes.instanceOf(Date),
   monthFormat: PropTypes.string,
   isSingle: PropTypes.bool,
-  isOpen: PropTypes.bool,
+  complsOpen: PropTypes.bool,
   dateChanged: PropTypes.instanceOf(Date),
-  highlightToday: PropTypes.bool
+  highlightToday: PropTypes.bool,
+  singleCalendar: PropTypes.bool
 };
 
 DialogContentDesktop.defaultProps = {
@@ -316,7 +337,7 @@ DialogContentDesktop.defaultProps = {
   maxDate: null,
   monthFormat: '',
   isSingle: false,
-  isOpen: false,
+  complsOpen: false,
   dateChanged: null,
   highlightToday: false,
 };

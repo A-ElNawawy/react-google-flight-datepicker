@@ -20,11 +20,14 @@ const MonthCalendar = ({
   minDate,
   maxDate,
   monthFormat,
+  weekDayFormat,
   isSingle,
   highlightToday,
+  singleCalendar,
 }) => {
   function generateWeek() {
     const { totalWeek, totalDay } = getMonthInfo(year, month, startWeekDay);
+
     return totalWeek.map((week, index) => (
       <Week
         // eslint-disable-next-line react/no-array-index-key
@@ -49,7 +52,7 @@ const MonthCalendar = ({
   }
 
   function generateWeekDay() {
-    const arrWeekDay = getWeekDay(startWeekDay);
+    const arrWeekDay = getWeekDay(startWeekDay, weekDayFormat);
     return arrWeekDay.map((day, index) => (
       <div className="weekday" key={index}>
         {day}
@@ -62,6 +65,7 @@ const MonthCalendar = ({
       className={cx('month-calendar', {
         isAnimating,
         hidden,
+          single: singleCalendar
       })}
       data-month-index={month + 1}
     >
@@ -95,6 +99,7 @@ MonthCalendar.propTypes = {
   monthFormat: PropTypes.string,
   isSingle: PropTypes.bool,
   highlightToday: PropTypes.bool,
+  singleCalendar: PropTypes.bool,
 };
 
 MonthCalendar.defaultProps = {
@@ -112,7 +117,7 @@ MonthCalendar.defaultProps = {
   maxDate: null,
   monthFormat: '',
   isSingle: false,
-  highlightToday: false
+  highlightToday: false,
 };
 
 export default MonthCalendar;

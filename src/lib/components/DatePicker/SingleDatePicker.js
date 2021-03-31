@@ -4,7 +4,7 @@ import React, {
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import dayjs from 'dayjs';
-
+import { debounce } from '../../helpers';
 import './styles.scss';
 import DateInputGroup from './DateInputGroup';
 import Dialog from './Dialog';
@@ -23,16 +23,21 @@ const SingleDatePicker = ({
   dateFormat,
   monthFormat,
   highlightToday,
+  isOpen,
+  onCloseCalendar,
+  singleCalendar,
+  weekDayFormat,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [complsOpen, setComplsOpen] = useState(false);
   const containerRef = useRef(null);
   const [fromDate, setFromDate] = useState();
+  const fromDateRef = useRef();
   const [hoverDate, setHoverDate] = useState();
-  const [isFirstTime, setIsFirstTime] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isFirstTime, setIsFirstTime] = useState(false);
 
   function handleResize() {
-    if (typeof window !== 'undefined' && window.innerWidth <= 500) {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
       setIsMobile(true);
     } else {
       setIsMobile(false);
@@ -48,26 +53,36 @@ const SingleDatePicker = ({
     }
   }, []);
 
-  useEffect(() => {
-    if (startDate) {
-      setFromDate(dayjs(startDate));
-    }
-  }, [startDate]);
-
   function handleDocumentClick(e) {
     if (
       containerRef.current
       && containerRef.current.contains(e.target) === false
-      && window.innerWidth > 500
+      && window.innerWidth >= 768
     ) {
-      setIsOpen(false);
+      setComplsOpen(false);
+    }
+  }
+
+  function notifyChange() {
+    const _startDate = fromDateRef.current ? fromDateRef.current.toDate() : null;
+    onChange(_startDate);
+  }
+
+  const debounceNotifyChange = debounce(notifyChange, 20);
+
+  function updateFromDate(dateValue, shouldNotifyChange = false) {
+    setFromDate(dateValue);
+    fromDateRef.current = dateValue;
+    if (shouldNotifyChange) {
+      debounceNotifyChange();
     }
   }
 
   useEffect(() => {
+    setComplsOpen(isOpen);
     setIsFirstTime(true);
     if (startDate) {
-      setFromDate(dayjs(startDate));
+      updateFromDate(dayjs(startDate), false);
     }
 
     document.addEventListener('click', handleDocumentClick);
@@ -76,21 +91,30 @@ const SingleDatePicker = ({
   }, []);
 
   useEffect(() => {
-    if (isFirstTime) {
-      const startDate = fromDate ? dayjs(fromDate) : null;
-      onChange(startDate);
+    const _startDateJs = startDate ? dayjs(startDate) : null;
+    fromDateRef.current = _startDateJs;
+    setFromDate(_startDateJs);
+  }, [startDate]);
+
+  useEffect(() => {
+    if (!complsOpen && isFirstTime) {
+      onCloseCalendar(startDate);
     }
-  }, [fromDate]);
+  }, [complsOpen]);
+
+  useEffect(() => {
+    setComplsOpen(isOpen);
+  }, [isOpen]);
 
   function toggleDialog() {
-    setIsOpen(!isOpen);
+    setComplsOpen(!complsOpen);
   }
 
   function handleClickDateInput() {
     if (disabled) return;
 
-    if (!isOpen) {
-      setIsOpen(true);
+    if (!complsOpen) {
+      setComplsOpen(true);
     }
 
     onFocus('Start Date');
@@ -100,7 +124,7 @@ const SingleDatePicker = ({
     if ((minDate && dayjs(minDate).isAfter(date, 'date')) || (maxDate && dayjs(maxDate).isBefore(date, 'date'))) {
       return;
     }
-    setFromDate(date);
+    updateFromDate(date, true);
   }
 
   function onHoverDate(date) {
@@ -108,7 +132,7 @@ const SingleDatePicker = ({
   }
 
   function handleReset() {
-    setFromDate(null);
+    updateFromDate(null, true);
     setHoverDate(null);
   }
 
@@ -138,7 +162,7 @@ const SingleDatePicker = ({
         />
         <DialogWrapper isMobile={isMobile}>
           <Dialog
-            isOpen={isOpen}
+            complsOpen={complsOpen}
             toggleDialog={toggleDialog}
             handleClickDateInput={handleClickDateInput}
             inputFocus="from"
@@ -157,6 +181,8 @@ const SingleDatePicker = ({
             isMobile={isMobile}
             highlightToday={highlightToday}
             isSingle
+            weekDayFormat={weekDayFormat}
+            singleCalendar={singleCalendar}
           />
         </DialogWrapper>
       </div>
@@ -176,7 +202,11 @@ SingleDatePicker.propTypes = {
   maxDate: PropTypes.instanceOf(Date),
   dateFormat: PropTypes.string,
   monthFormat: PropTypes.string,
+  weekDayFormat: PropTypes.string,
   highlightToday: PropTypes.bool,
+  isOpen: PropTypes.bool,
+  onCloseCalendar: PropTypes.func,
+  singleCalendar: PropTypes.bool
 };
 
 SingleDatePicker.defaultProps = {
@@ -187,11 +217,14 @@ SingleDatePicker.defaultProps = {
   onChange: () => {},
   onFocus: () => {},
   startWeekDay: 'monday',
+  weekDayFormat: 'dd',
   minDate: null,
   maxDate: null,
   dateFormat: '',
   monthFormat: '',
   highlightToday: false,
+  isOpen: false,
+  onCloseCalendar: () => {},
 };
 
 export default SingleDatePicker;

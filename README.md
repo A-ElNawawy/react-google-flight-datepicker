@@ -28,7 +28,7 @@ import 'react-google-flight-datepicker/dist/main.css';
 <RangeDatePicker
   startDate={new Date()}
   endDate={new Date()}
-  onChange={({startDate, endDate}) => onDateChange(startDate, endDate)}
+  onChange={(startDate, endDate) => onDateChange(startDate, endDate)}
   minDate={new Date(1900, 0, 1)}
   maxDate={new Date(2100, 0, 1)}
   dateFormat="D"
@@ -48,7 +48,7 @@ import 'react-google-flight-datepicker/dist/main.css';
 
 <SingleDatePicker
   startDate={new Date()}
-  onChange={({startDate}) => onDateChange(startDate)}
+  onChange={(startDate) => onDateChange(startDate)}
   minDate={new Date(1900, 0, 1)}
   maxDate={new Date(2100, 0, 1)}
   dateFormat="D"
@@ -76,7 +76,7 @@ startDatePlaceholder | String | Start Date | Placeholder text for startDate text
 endDatePlaceholder | String | End Date | Placeholder text for endDate text input |
 startWeekDay | String (monday or sunday) | monday | Determine the start day for a week (monday or sunday) |
 highlightToday | Bool | false | Hightlight "today" date
-
+singleCalendar | Bool | false | Only applicable on SingleDatePicker. When this prop is actived, the datepicker will display 1 calendar instead of 2 calendar in the the container
 ### Author
 - David Tran - david@jslancer.com
 - Leo Phan - leo.phan@jslancer.com
